@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Globe, ExternalLink, Mail, Phone, MapPin,
   Linkedin, Github, Twitter, Code, Smartphone,
-  Zap, Users, Star, ArrowUpRight,
+  Zap, Users, Star, ArrowUpRight, Monitor, Layers, Shield,
+  CheckCircle, PlayCircle, Fingerprint, Activity 
 } from 'lucide-react';
 
 // ── Screenshot API ────────────────────────────────────────────────────────
@@ -10,193 +11,218 @@ const screenshotUrl = (url) =>
   `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
 
 const categoryMeta = {
-  job:       { label: 'Job Portal',  accent: '#60a5fa' },
-  nonprofit: { label: 'Non-Profit',  accent: '#34d399' },
-  health:    { label: 'Healthcare',  accent: '#c084fc' },
-  other:     { label: 'Business',    accent: '#fb923c' },
+  job:       { label: 'Platform',  accent: '#3b82f6' },
+  nonprofit: { label: 'Non-Profit', accent: '#10b981' },
+  health:    { label: 'Healthcare', accent: '#8b5cf6' },
+  other:     { label: 'Corporate',  accent: '#f59e0b' },
 };
 
 const websites = {
   jobPortals: [
-    { name: 'Accountant Hire',    url: 'https://accountanthire.com',       category: 'job',       description: 'Specialized accounting jobs' },
-    { name: 'Deep Dive Hire',     url: 'https://deepdivehire.com',         category: 'job',       description: 'Tech recruitment platform' },
-    { name: 'Keyway Solutions',   url: 'https://keywaysolutions.com',      category: 'job',       description: 'IT recruitment agency' },
-    { name: 'Capstone Recruiter', url: 'https://capstonerecruiter.com',    category: 'job',       description: 'Graduate recruitment' },
-    { name: 'Simrec',             url: 'https://simrec.net',               category: 'job',       description: 'Recruitment software' },
-    { name: 'DaBoss Consultants', url: 'https://dabossconsultants.com',    category: 'job',       description: 'Executive search firm' },
+    { name: 'Accountant Hire',    url: 'https://accountanthire.com',       category: 'job',       description: 'Specialized accounting recruitment platform' },
+    { name: 'Deep Dive Hire',     url: 'https://deepdivehire.com',         category: 'job',       description: 'Tech talent acquisition system' },
+    { name: 'Keyway Solutions',   url: 'https://keywaysolutions.com',      category: 'job',       description: 'IT recruitment agency portal' },
+    { name: 'Capstone Recruiter', url: 'https://capstonerecruiter.com',    category: 'job',       description: 'Graduate networking and recruitment' },
   ],
   nonProfit: [
-    { name: 'Tulsa Nonprofit',    url: 'https://tulsanonprofit.org',       category: 'nonprofit', description: 'Community support platform' },
-    { name: 'Fund It Showit',     url: 'https://funditshowit.com',         category: 'nonprofit', description: 'Creative fundraising' },
-    { name: 'Sponsor Funded',     url: 'https://sponsorfunded.com',        category: 'nonprofit', description: 'Sponsorship platform' },
-    { name: 'Fund Starters',      url: 'https://fundstarters.com',        category: 'nonprofit', description: 'Crowdfunding for startups' },
-    { name: 'NIAPNY',             url: 'https://niapny.org',               category: 'nonprofit', description: 'Arts organization' },
-    { name: 'ESL On The Go',      url: 'https://eslonthego.org',           category: 'nonprofit', description: 'Language education' },
-    { name: 'Have Support',       url: 'https://havesupport.org',          category: 'nonprofit', description: 'Peer support network' },
+    { name: 'Tulsa Nonprofit',    url: 'https://tulsanonprofit.org',       category: 'nonprofit', description: 'Community support and funding platform' },
+    { name: 'Fund It Showit',     url: 'https://funditshowit.com',         category: 'nonprofit', description: 'Creative arts fundraising initiative' },
+    { name: 'Sponsor Funded',     url: 'https://sponsorfunded.com',        category: 'nonprofit', description: 'Global sponsorship hub' },
   ],
   healthCare: [
-    { name: 'Prestigious Home Health', url: 'https://prestigioushomehealth.com', category: 'health', description: 'Elderly care services' },
+    { name: 'Prestigious Health', url: 'https://prestigioushomehealth.com', category: 'health', description: 'Elderly care & healthcare services' },
   ],
   other: [
-    { name: 'Geo Solutions',         url: 'https://geosolutionspk.com',     category: 'other', description: 'Geospatial solutions' },
-    { name: 'A New View Properties', url: 'https://anewviewproperties.com', category: 'other', description: 'Real estate agency' },
-    { name: 'Zuid 55',               url: 'https://zuid55.com',             category: 'other', description: 'Commercial real estate' },
-    { name: 'Ikonnect Services',     url: 'https://ikonnectservice.com',    category: 'other', description: 'IT services' },
-    { name: 'Upgrade BDC',           url: 'https://upgradebdc.com',         category: 'other', description: 'Business development' },
+    { name: 'Geo Solutions',         url: 'https://geosolutionspk.com',     category: 'other', description: 'Geospatial & satellite imaging data' },
+    { name: 'A New View Properties', url: 'https://anewviewproperties.com', category: 'other', description: 'Luxury real estate agency' },
+    { name: 'Zuid 55',               url: 'https://zuid55.com',             category: 'other', description: 'Commercial real estate portfolio' },
   ],
 };
+
 const allWebsites = [
-  ...websites.jobPortals,
-  ...websites.nonProfit,
-  ...websites.healthCare,
-  ...websites.other,
+  ...websites.jobPortals, ...websites.nonProfit, ...websites.healthCare, ...websites.other,
 ];
 
-// ── Star Canvas with mouse particles ─────────────────────────────────────
-function StarCanvas() {
+// ── ANIMATION 1: Interactive Flowing Liquid Network ─────────────────────────
+// A highly interactive mesh of liquid particles that connect and dynamically repel from the mouse.
+function InteractiveNetwork() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    let W = (canvas.width = window.innerWidth);
-    let H = (canvas.height = document.documentElement.scrollHeight);
-    const mouse = { x: -9999, y: -9999 };
-    const particles = [];
+    let W, H;
+    let particles = [];
+    let rafId;
 
-    // Static background stars
-    const stars = Array.from({ length: 320 }, () => ({
-      x: Math.random() * W,
-      y: Math.random() * H,
-      r: Math.random() * 1.3 + 0.2,
-      baseAlpha: Math.random() * 0.6 + 0.15,
-      twinkle: Math.random() * Math.PI * 2,
-      twinkleSpeed: Math.random() * 0.007 + 0.002,
-    }));
+    let mouse = { x: null, y: null, radius: 250 }; // Interaction radius
 
-    const onResize = () => {
+    const resize = () => {
       W = canvas.width = window.innerWidth;
-      H = canvas.height = document.documentElement.scrollHeight;
+      H = canvas.height = window.innerHeight;
+      init();
     };
 
-    const onMouseMove = (e) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY + window.scrollY;
-      for (let i = 0; i < 4; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 2 + 0.5;
+    const init = () => {
+      particles = [];
+      const density = window.innerWidth < 768 ? 6000 : 12000; 
+      const numParticles = Math.floor((W * H) / density);
+      
+      for (let i = 0; i < numParticles; i++) {
         particles.push({
-          x: mouse.x,
-          y: mouse.y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          r: Math.random() * 1.6 + 0.4,
-          alpha: 0.9 + Math.random() * 0.1,
-          decay: Math.random() * 0.016 + 0.01,
-          hue: 220 + Math.random() * 70,
-          sat: 60 + Math.random() * 30,
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 0.7,
+          vy: (Math.random() - 0.5) * 0.7,
+          baseX: Math.random() * W,
+          baseY: Math.random() * H,
+          size: Math.random() * 2.5 + 0.5,
+          color: Math.random() > 0.6 ? [59, 130, 246] : (Math.random() > 0.4 ? [139, 92, 246] : [255, 255, 255])
         });
-        if (particles.length > 400) particles.splice(0, particles.length - 400);
       }
     };
 
-    window.addEventListener('resize', onResize);
-    window.addEventListener('mousemove', onMouseMove);
-
-    let t = 0;
-    let raf;
     const draw = () => {
-      t += 0.016;
       ctx.clearRect(0, 0, W, H);
-
-      // Stars
-      for (const s of stars) {
-        const tw = Math.sin(t * s.twinkleSpeed * 60 + s.twinkle) * 0.28 + 0.72;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${s.baseAlpha * tw})`;
-        ctx.fill();
-      }
-
-      // Mouse glow
-      if (mouse.x > 0) {
-        const grd = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 130);
-        grd.addColorStop(0, 'rgba(110,80,255,0.14)');
-        grd.addColorStop(0.5, 'rgba(80,100,255,0.05)');
-        grd.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = grd;
-        ctx.fillRect(0, 0, W, H);
-      }
-
-      // Particles
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
+      
+      for (let i = 0; i < particles.length; i++) {
+        let p = particles[i];
         p.x += p.vx;
         p.y += p.vy;
-        p.vx *= 0.965;
-        p.vy *= 0.965;
-        p.alpha -= p.decay;
-        if (p.alpha <= 0.01) { particles.splice(i, 1); continue; }
-        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 3);
-        g.addColorStop(0, `hsla(${p.hue},${p.sat}%,88%,${p.alpha})`);
-        g.addColorStop(1, `hsla(${p.hue},${p.sat}%,70%,0)`);
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
-        ctx.fillStyle = g;
-        ctx.fill();
-      }
 
-      raf = requestAnimationFrame(draw);
+        // Soft bounce off walls
+        if (p.x < 0 || p.x > W) p.vx *= -1;
+        if (p.y < 0 || p.y > H) p.vy *= -1;
+
+        // Interaction with mouse - Liquid flow algorithm
+        if (mouse.x != null) {
+          let dx = mouse.x - p.x;
+          let dy = mouse.y - p.y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance < mouse.radius) {
+            const forceDirectionX = dx / distance;
+            const forceDirectionY = dy / distance;
+            const force = (mouse.radius - distance) / mouse.radius;
+            // Negative push to repel particles like liquid splitting
+            const pushX = forceDirectionX * force * 3;
+            const pushY = forceDirectionY * force * 3;
+            
+            p.x -= pushX;
+            p.y -= pushY;
+            // Particles light up slightly
+            ctx.fillStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, 0.9)`;
+          } else {
+            ctx.fillStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, 0.3)`;
+          }
+        } else {
+          ctx.fillStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, 0.3)`;
+        }
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Connect nearby particles to create fluid web
+        for (let j = i; j < particles.length; j++) {
+          let p2 = particles[j];
+          let dX = p.x - p2.x;
+          let dY = p.y - p2.y;
+          let distance = Math.sqrt(dX * dX + dY * dY);
+          
+          // Only connect if within range
+          if (distance < 110) {
+            let opacity = 1 - (distance / 110);
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, ${opacity * 0.25})`;
+            ctx.lineWidth = 0.8;
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+      }
+      rafId = requestAnimationFrame(draw);
     };
+
+    window.addEventListener('resize', resize);
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+    window.addEventListener('mouseout', () => {
+      mouse.x = null;
+      mouse.y = null;
+    });
+    
+    resize();
     draw();
 
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener('resize', onResize);
-      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(rafId);
     };
   }, []);
 
+  return <canvas ref={canvasRef} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }} />;
+}
+
+// ── ANIMATION 2: Realistic 3D Tilt Card (with glare) ────────────────────────
+function TiltCard({ children, style }) {
+  const cardRef = useRef(null);
+  const [glare, setGlare] = useState({ x: 50, y: 50, opacity: 0 });
+  const [transform, setTransform] = useState('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
+
+  const handleMouseMove = (e) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const rotateY = -1 * ((x / rect.width) * 10 - 5);
+    const rotateX = ((y / rect.height) * 10 - 5);
+    
+    setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`);
+    setGlare({ x: (x / rect.width) * 100, y: (y / rect.height) * 100, opacity: 0.2 });
+  };
+
+  const handleMouseLeave = () => {
+    setTransform('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
+    setGlare({ ...glare, opacity: 0 });
+  };
+
   return (
-    <canvas
-      ref={canvasRef}
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="tilt-container"
       style={{
-        position: 'fixed', top: 0, left: 0,
-        width: '100vw', height: '100vh',
-        pointerEvents: 'none', zIndex: 0,
+        ...style,
+        transform,
+        transformStyle: 'preserve-3d',
+        transition: 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1)',
+        position: 'relative',
+        overflow: 'hidden'
       }}
-    />
+    >
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10,
+        background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255,255,255,${glare.opacity}), transparent 60%)`,
+        transition: 'opacity 0.3s'
+      }} />
+      <div style={{ position: 'relative', zIndex: 1, height: '100%', width: '100%', transform: 'translateZ(30px)' }}>
+        {children}
+      </div>
+    </div>
   );
 }
 
-// ── Cycling headline word ─────────────────────────────────────────────────
-function CycleWord({ words }) {
-  const [i, setI] = useState(0);
-  const [show, setShow] = useState(true);
-  useEffect(() => {
-    const iv = setInterval(() => {
-      setShow(false);
-      setTimeout(() => { setI(x => (x + 1) % words.length); setShow(true); }, 380);
-    }, 2600);
-    return () => clearInterval(iv);
-  }, [words.length]);
-  return (
-    <span style={{
-      color: '#a78bfa',
-      fontStyle: 'italic',
-      display: 'inline-block',
-      opacity: show ? 1 : 0,
-      transform: show ? 'translateY(0)' : 'translateY(10px)',
-      transition: 'opacity .34s ease, transform .34s ease',
-    }}>{words[i]}</span>
-  );
-}
-
-// ── Site Card ─────────────────────────────────────────────────────────────
+// ── Site Card using TiltCard ────────────────────────────────────────────────
 function SiteCard({ site }) {
-  const [src, setSrc]       = useState(null);
+  const [src, setSrc] = useState(null);
   const [loaded, setLoaded] = useState(false);
-  const [error, setError]   = useState(false);
+  const [error, setError] = useState(false);
   const meta = categoryMeta[site.category];
   const host = site.url.replace(/^https?:\/\//, '');
 
@@ -206,482 +232,418 @@ function SiteCard({ site }) {
     setError(false);
   }, [site.url]);
 
-  const border = 'rgba(255,255,255,0.07)';
-
   return (
-    <a href={site.url} target="_blank" rel="noopener noreferrer"
-      style={{
-        display: 'flex', flexDirection: 'column',
-        background: 'rgba(8,6,22,0.72)',
-        border: `1px solid ${border}`,
-        borderRadius: 16, overflow: 'hidden',
-        textDecoration: 'none',
-        backdropFilter: 'blur(14px)',
-        transition: 'transform .26s ease, box-shadow .26s ease, border-color .26s ease',
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.transform = 'translateY(-6px)';
-        e.currentTarget.style.boxShadow = `0 28px 64px rgba(0,0,0,.75), 0 0 32px ${meta.accent}28`;
-        e.currentTarget.style.borderColor = meta.accent + '55';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.transform = 'none';
-        e.currentTarget.style.boxShadow = 'none';
-        e.currentTarget.style.borderColor = border;
-      }}
-    >
-      <div style={{ position: 'relative', width: '100%', paddingTop: '58%', background: '#06051a', overflow: 'hidden' }}>
-        {!loaded && !error && (
+    <TiltCard style={{
+      display: 'flex', flexDirection: 'column',
+      background: 'rgba(15, 15, 20, 0.5)',
+      border: `1px solid rgba(255,255,255,0.06)`,
+      borderRadius: 20,
+      textDecoration: 'none',
+      backdropFilter: 'blur(20px) saturate(140%)',
+      cursor: 'pointer',
+      boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
+      height: '100%'
+    }}>
+      <a href={site.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ position: 'relative', width: '100%', paddingTop: '65%', background: '#0a0a0f', overflow: 'hidden', borderTopLeftRadius: 20, borderTopRightRadius: 20 }}>
+          {!loaded && !error && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(90deg, #11111a 25%, #1c1c2b 50%, #11111a 75%)',
+              backgroundSize: '200% 100%', animation: 'shimmer 2s infinite'
+            }} />
+          )}
+          {error && (
+            <div style={{
+              position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10,
+              background: `radial-gradient(circle at center, ${meta.accent}22 0%, #0a0a0f 80%)`
+            }}>
+              <Globe size={32} color={meta.accent} style={{ opacity: .6 }} />
+              <span style={{ fontSize: 11, color: meta.accent, opacity: .7, fontFamily: 'monospace' }}>{host}</span>
+            </div>
+          )}
+          {src && (
+            <img src={src} alt={site.name} onLoad={() => setLoaded(true)} onError={() => setError(true)}
+              style={{
+                position: 'absolute', inset: 0, width: '100%', height: '100%',
+                objectFit: 'cover', opacity: loaded ? 1 : 0, transition: 'opacity 0.6s ease'
+              }}
+            />
+          )}
           <div style={{
-            position: 'absolute', inset: 0,
-            background: 'linear-gradient(90deg,#0b0920 25%,#131130 50%,#0b0920 75%)',
-            backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite',
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
+            background: 'linear-gradient(to top, rgba(15,15,20,1) 10%, transparent)', pointerEvents: 'none'
           }} />
-        )}
-        {error && (
           <div style={{
-            position: 'absolute', inset: 0, display: 'flex',
-            flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
-            background: `radial-gradient(ellipse, ${meta.accent}18 0%, #06051a 70%)`,
-          }}>
-            <Globe size={28} color={meta.accent} style={{ opacity: .7 }} />
-            <span style={{ fontSize: 10, color: meta.accent, opacity: .65, fontFamily: 'monospace' }}>{host}</span>
+            position: 'absolute', top: 16, left: 16,
+            background: 'rgba(0,0,0,0.4)', border: `1px solid ${meta.accent}77`, color: '#fff',
+            fontSize: 10, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase',
+            padding: '6px 14px', borderRadius: 30, backdropFilter: 'blur(10px)'
+          }}>{meta.label}</div>
+        </div>
+        <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 18, fontWeight: 600, color: '#ffffff', fontFamily: "'Outfit', sans-serif" }}>{site.name}</span>
+            <ExternalLink size={16} color='rgba(255,255,255,0.4)' />
           </div>
-        )}
-        {src && (
-          <img src={src} alt={site.name}
-            onLoad={() => setLoaded(true)}
-            onError={() => setError(true)}
-            style={{
-              position: 'absolute', inset: 0, width: '100%', height: '100%',
-              objectFit: 'cover', opacity: loaded ? 1 : 0,
-              transition: 'opacity .5s ease',
-            }}
-          />
-        )}
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: 50,
-          background: 'linear-gradient(to top, rgba(6,5,26,.85), transparent)',
-          pointerEvents: 'none',
-        }} />
-        <div style={{
-          position: 'absolute', top: 10, left: 10,
-          background: meta.accent + 'dd', color: '#fff',
-          fontSize: 9, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase',
-          padding: '3px 10px', borderRadius: 20,
-        }}>{meta.label}</div>
-        <div style={{
-          position: 'absolute', top: 10, right: 10,
-          display: 'flex', alignItems: 'center', gap: 5,
-          background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(8px)',
-          borderRadius: 20, padding: '3px 9px',
-        }}>
-          <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', display: 'inline-block', animation: 'livePulse 2s infinite' }} />
-          <span style={{ color: '#fff', fontSize: 9, fontWeight: 600 }}>LIVE</span>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontFamily: "'JetBrains Mono', monospace" }}>{host}</span>
+          <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', marginTop: 12, lineHeight: 1.6 }}>{site.description}</span>
         </div>
-      </div>
-      <div style={{ padding: '14px 16px 18px', flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#e8e6ff', fontFamily: "'DM Sans',sans-serif" }}>{site.name}</span>
-          <ExternalLink size={12} color='rgba(255,255,255,.28)' />
-        </div>
-        <span style={{ fontSize: 10, color: 'rgba(255,255,255,.28)', fontFamily: 'monospace' }}>{host}</span>
-        <span style={{ fontSize: 11, color: 'rgba(255,255,255,.42)', marginTop: 2, lineHeight: 1.55 }}>{site.description}</span>
-      </div>
-    </a>
+      </a>
+    </TiltCard>
   );
 }
 
 // ── App ───────────────────────────────────────────────────────────────────
 export default function App() {
   const [activeCategory, setCategory] = useState('all');
-  const [scrollY, setScrollY]         = useState(0);
+  const [scrollY, setScrollY] = useState(0);
+  const [mobileMenu, setMobileMenu] = useState(false);
 
   useEffect(() => {
     const fn = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', fn);
+    window.addEventListener('scroll', fn, { passive: true });
     return () => window.removeEventListener('scroll', fn);
   }, []);
-
-  const accent  = '#7c6cff';
-  const border  = 'rgba(255,255,255,0.07)';
-  const muted   = 'rgba(255,255,255,0.40)';
-  const text    = '#e8e6ff';
-  const surface = 'rgba(255,255,255,0.02)';
-
-  const categories = [
-    { id: 'all',       label: 'All',        count: allWebsites.length },
-    { id: 'job',       label: 'Job Portals',count: websites.jobPortals.length },
-    { id: 'nonprofit', label: 'Non-Profit', count: websites.nonProfit.length },
-    { id: 'health',    label: 'Healthcare', count: websites.healthCare.length },
-    { id: 'other',     label: 'Business',   count: websites.other.length },
-  ];
 
   const filtered = activeCategory === 'all'
     ? allWebsites
     : allWebsites.filter(s => s.category === activeCategory);
 
-  const navScrolled = scrollY > 40;
+  const categories = [
+    { id: 'all',       label: 'All Works' },
+    { id: 'job',       label: 'Platforms' },
+    { id: 'nonprofit', label: 'Non-Profit' },
+    { id: 'health',    label: 'Healthcare' },
+    { id: 'other',     label: 'Corporate' },
+  ];
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
-        body { font-family: 'DM Sans', sans-serif; background: #04030f; overflow-x: hidden; cursor: default; }
-        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-        @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.35;transform:scale(1.5)} }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:none} }
-        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-        @keyframes orbFloat1 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(50px,-35px) scale(1.07)} 66%{transform:translate(-25px,45px) scale(.95)} }
-        @keyframes orbFloat2 { 0%,100%{transform:translate(0,0)} 40%{transform:translate(-45px,55px)} 70%{transform:translate(35px,-25px)} }
-        @keyframes floatY    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-        @keyframes rotateSlow{ from{transform:translate(-50%,-50%) rotate(0deg)} to{transform:translate(-50%,-50%) rotate(360deg)} }
-        @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-        .fu1{animation:fadeUp .8s ease both .08s} .fu2{animation:fadeUp .8s ease both .2s}
-        .fu3{animation:fadeUp .8s ease both .34s} .fu4{animation:fadeUp .8s ease both .48s}
-        .fu5{animation:fadeUp .8s ease both .62s} .fi{animation:fadeIn .55s ease both}
-        ::selection{background:rgba(124,108,255,.38);color:#fff}
-        ::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-track{background:#04030f}
-        ::-webkit-scrollbar-thumb{background:rgba(124,108,255,.35);border-radius:3px}
-        input::placeholder,textarea::placeholder{color:rgba(255,255,255,.2)}
-        input,textarea{caret-color:#a78bfa}
+        html { scroll-behavior: smooth; background: #000; }
+        body { font-family: 'Inter', sans-serif; background: #020202; overflow-x: hidden; color: #f3f4f6; }
+        
+        ::selection { background: rgba(59, 130, 246, 0.4); color: #fff; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+        
+        @keyframes shimmer { 0% {background-position: 200% 0} 100% {background-position: -200% 0} }
+        @keyframes liquidAura { 
+          0% { transform: translate(0, 0) scale(1) rotate(0deg); } 
+          33% { transform: translate(5%, -5%) scale(1.1) rotate(2deg); }
+          66% { transform: translate(-5%, 5%) scale(0.9) rotate(-2deg); }
+          100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+        }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .fade-up-1 { animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.1s; opacity: 0; }
+        .fade-up-2 { animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.2s; opacity: 0; }
+        .fade-up-3 { animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.3s; opacity: 0; }
+        .fade-up-4 { animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.4s; opacity: 0; }
+        
+        /* Realistic frosted glass button */
+        .glass-btn {
+          position: relative;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(12px);
+          overflow: hidden;
+          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .glass-btn:hover {
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          transform: translateY(-4px);
+          box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+        }
+        .glass-btn::before {
+          content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+          transform: skewX(-20deg); transition: 0.7s;
+        }
+        .glass-btn:hover::before { left: 150%; }
+        
+        /* Interactive Nav Link */
+        .nav-link {
+          position: relative; color: rgba(255,255,255,0.6); text-decoration: none;
+          font-weight: 500; font-size: 14px; letter-spacing: 0.02em; padding: 6px 12px;
+          transition: color 0.3s ease;
+        }
+        .nav-link:hover { color: #fff; }
+        .nav-link::after {
+          content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 1px;
+          background: #3b82f6; transition: all 0.3s ease; transform: translateX(-50%);
+        }
+        .nav-link:hover::after { width: 80%; }
+
+        /* Responsive Layout Utilities */
+        .section-container { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr; gap: 40px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr; gap: 24px; }
+        
+        @media (min-width: 768px) {
+          .grid-2 { grid-template-columns: 1fr 1fr; gap: 60px; }
+          .grid-3 { grid-template-columns: 1fr 1fr; }
+          .hero-grid { grid-template-columns: 1.2fr 1fr !important; gap: 80px; }
+        }
+        @media (min-width: 1024px) {
+          .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+        }
+
+        .desktop-nav { display: none; }
+        .mobile-toggle { display: block; background: transparent; border: none; color: white; cursor: pointer; }
+        @media (min-width: 768px) {
+          .desktop-nav { display: flex; }
+          .mobile-toggle { display: none; }
+        }
       `}</style>
 
-      {/* Deep space gradient backdrop */}
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: 0,
-        background: 'radial-gradient(ellipse at 18% 40%, #0f0925 0%, #04030f 55%), radial-gradient(ellipse at 80% 80%, #050818 0%, transparent 60%)',
-      }} />
+      {/* ── BACKGROUND INCANDESCENCE ────────────────────────────────────── */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+        <div style={{
+          position: 'absolute', top: '-10%', left: '-10%', width: '60vw', height: '60vw',
+          background: 'radial-gradient(circle, rgba(14, 165, 233, 0.05) 0%, transparent 60%)',
+          filter: 'blur(90px)', animation: 'liquidAura 25s ease-in-out infinite alternate'
+        }} />
+        <div style={{
+          position: 'absolute', bottom: '-10%', right: '-10%', width: '50vw', height: '50vw',
+          background: 'radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 60%)',
+          filter: 'blur(90px)', animation: 'liquidAura 30s ease-in-out infinite alternate-reverse'
+        }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, transparent 0%, #000 100%)', opacity: 0.8 }} />
+      </div>
 
-      <StarCanvas />
+      <InteractiveNetwork />
 
-      <div style={{ position: 'relative', zIndex: 1, color: text, minHeight: '100vh' }}>
-
-        {/* ── NAV ─────────────────────────────────────────────────────── */}
+      <div style={{ position: 'relative', zIndex: 10 }}>
+        
+        {/* ── REALISTIC GLASS NAV ─────────────────────────────────────── */}
         <nav style={{
-          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200, height: 64,
-          background: navScrolled ? 'rgba(4,3,15,.88)' : 'transparent',
-          borderBottom: navScrolled ? `1px solid ${border}` : '1px solid transparent',
-          backdropFilter: navScrolled ? 'blur(22px)' : 'none',
-          transition: 'all .35s ease',
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
+          padding: '24px 0', transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          transform: scrollY > 50 ? 'translateY(-12px)' : 'translateY(0)',
         }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 28px', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            maxWidth: 1100, margin: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            background: scrollY > 50 ? 'rgba(10, 10, 15, 0.85)' : 'transparent',
+            border: scrollY > 50 ? '1px solid rgba(255,255,255,0.08)' : '1px solid transparent',
+            borderRadius: 40, padding: scrollY > 50 ? '14px 28px' : '0 12px',
+            backdropFilter: scrollY > 50 ? 'blur(24px) saturate(200%)' : 'none',
+            boxShadow: scrollY > 50 ? '0 20px 40px rgba(0,0,0,0.5)' : 'none',
+          }} className="nav-container">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <div style={{
-                width: 36, height: 36, borderRadius: 10,
-                background: 'linear-gradient(135deg,#7c6cff,#a78bfa)',
+                width: 38, height: 38, borderRadius: 10, background: '#fff',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: "'DM Serif Display',serif", color: '#fff', fontSize: 18,
-                boxShadow: '0 0 18px rgba(124,108,255,.45)',
-              }}>T</div>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 600, fontFamily: "'DM Serif Display',serif", color: '#e8e6ff', letterSpacing: '.01em' }}>Talha Ahmed</div>
-                <div style={{ fontSize: 9, color: muted, letterSpacing: '.1em', textTransform: 'uppercase' }}>WordPress Developer</div>
+                fontFamily: "'Outfit', sans-serif", color: '#000', fontSize: 18, fontWeight: 700,
+                boxShadow: '0 4px 14px rgba(255,255,255,0.2)'
+              }}>NX</div>
+              <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color: '#fff', letterSpacing: '-0.02em' }}>
+                NEXUS.
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
-              {['Work','About','Contact'].map(l => (
-                <a key={l} href={`#${l.toLowerCase()}`}
-                  style={{ fontSize: 13, color: muted, textDecoration: 'none', fontWeight: 500, letterSpacing: '.03em', transition: 'color .2s' }}
-                  onMouseEnter={e => e.target.style.color = '#e8e6ff'}
-                  onMouseLeave={e => e.target.style.color = muted}>{l}</a>
+            
+            <div className="desktop-nav" style={{ alignItems: 'center', gap: 20 }}>
+              {['Works','Process','Agency'].map(l => (
+                <a key={l} href={`#${l.toLowerCase()}`} className="nav-link">{l}</a>
+              ))}
+              <a href="#contact" style={{
+                marginLeft: 16, padding: '12px 26px', borderRadius: 30, background: '#fff', color: '#000',
+                fontSize: 14, fontWeight: 600, textDecoration: 'none', transition: 'transform 0.2s',
+              }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+                Start Project
+              </a>
+            </div>
+
+            <button className="mobile-toggle" onClick={() => setMobileMenu(!mobileMenu)}>
+              <Layers size={24} color="#fff" />
+            </button>
+          </div>
+
+          {/* Mobile Menu Expansion */}
+          {mobileMenu && (
+            <div style={{ position: 'fixed', top: 80, left: 24, right: 24, background: 'rgba(15,15,20,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: 20, backdropFilter: 'blur(20px)', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {['Works','Process','Agency','Contact'].map(l => (
+                <a key={l} href={`#${l.toLowerCase()}`} onClick={() => setMobileMenu(false)} style={{ color: '#fff', textDecoration: 'none', fontSize: 16, padding: '10px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: 10 }}>{l}</a>
               ))}
             </div>
-          </div>
+          )}
         </nav>
 
         {/* ── HERO ─────────────────────────────────────────────────────── */}
-        <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', overflow: 'hidden', padding: '0 28px' }}>
-          {/* Ambient orbs */}
-          <div style={{ position: 'absolute', top: '8%',  left: '3%',  width: 560, height: 560, borderRadius: '50%', background: 'radial-gradient(circle,rgba(124,108,255,.13) 0%,transparent 68%)', animation: 'orbFloat1 20s ease-in-out infinite', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', bottom: '5%', right: '5%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle,rgba(167,139,250,.09) 0%,transparent 68%)', animation: 'orbFloat2 25s ease-in-out infinite', pointerEvents: 'none' }} />
-
-          {/* Decorative rings */}
-          <div style={{ position: 'absolute', top: '50%', left: '50%', width: 760, height: 760, borderRadius: '50%', border: '1px solid rgba(124,108,255,.05)', animation: 'rotateSlow 55s linear infinite', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', top: '50%', left: '50%', width: 540, height: 540, borderRadius: '50%', border: '1px solid rgba(124,108,255,.04)', animation: 'rotateSlow 35s linear infinite reverse', pointerEvents: 'none', transform: 'translate(-50%,-50%)' }} />
-
-          <div style={{ maxWidth: 1100, margin: '0 auto', width: '100%', paddingTop: 110, paddingBottom: 90, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
-
-            {/* Left: headline */}
-            <div>
-              {/* Status pill */}
-              <div className="fu1" style={{
-                display: 'inline-flex', alignItems: 'center', gap: 8,
-                fontSize: 10, letterSpacing: '.13em', textTransform: 'uppercase',
-                color: '#34d399', fontWeight: 700,
-                border: '1px solid rgba(52,211,153,.25)',
-                background: 'rgba(52,211,153,.07)',
-                padding: '6px 14px', borderRadius: 20, marginBottom: 32,
+        <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', paddingTop: 100, paddingBottom: 60 }}>
+          <div className="section-container grid-2 hero-grid" style={{ alignItems: 'center' }}>
+            
+            <div style={{ zIndex: 2 }}>
+              <div className="fade-up-1" style={{
+                display: 'inline-flex', alignItems: 'center', gap: 10, fontSize: 12, letterSpacing: '0.15em', textTransform: 'uppercase',
+                color: '#fff', fontWeight: 600, border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)',
+                padding: '8px 20px', borderRadius: 40, marginBottom: 40, backdropFilter: 'blur(10px)',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
               }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e', display: 'inline-block', animation: 'livePulse 2.2s infinite' }} />
-                Open to new projects
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#3b82f6', boxShadow: '0 0 15px #3b82f6', animation: 'liquidAura 2s infinite' }} />
+                Premium Digital Studio
               </div>
 
-              <h1 className="fu2" style={{
-                fontFamily: "'DM Serif Display',serif",
-                fontSize: 'clamp(40px,5.2vw,74px)',
-                lineHeight: 1.06,
-                fontWeight: 400,
-                letterSpacing: '-.025em',
-                marginBottom: 26,
+              <h1 className="fade-up-2" style={{
+                fontFamily: "'Outfit', sans-serif", fontSize: 'clamp(44px, 7vw, 92px)', fontWeight: 300,
+                lineHeight: 1.05, letterSpacing: '-0.03em', color: '#fff', marginBottom: 30
               }}>
-                Building digital<br />
-                worlds with{' '}
-                <CycleWord words={['precision.','purpose.','passion.','craft.']} />
+                Architecting <br />
+                <span style={{ fontWeight: 600, background: 'linear-gradient(135deg, #fff 0%, #52525b 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  fluid reality.
+                </span>
               </h1>
 
-              <p className="fu3" style={{ fontSize: 16, color: muted, lineHeight: 1.82, maxWidth: 450, marginBottom: 40 }}>
-                WordPress developer · <strong style={{ color: text, fontWeight: 500 }}>5+ years</strong> delivering high-performance websites across job portals, healthcare, non-profits & businesses in{' '}
-                <strong style={{ color: text, fontWeight: 500 }}>10+ countries</strong>.
+              <p className="fade-up-3" style={{ fontSize: 'clamp(16px, 2vw, 20px)', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, maxWidth: 520, marginBottom: 48, fontWeight: 300 }}>
+                We are <strong style={{ color: '#fff', fontWeight: 500 }}>Nexus Digital</strong> — an elite agency engineering high-performance platforms and bespoke web environments for industry leaders worldwide.
               </p>
 
-              <div className="fu4" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 56 }}>
-                <a href="#work" style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8,
-                  background: 'linear-gradient(135deg,#7c6cff,#a78bfa)',
-                  backgroundSize: '200% 200%',
-                  color: '#fff', padding: '13px 30px',
-                  borderRadius: 12, fontSize: 13, fontWeight: 600,
-                  textDecoration: 'none',
-                  boxShadow: '0 0 28px rgba(124,108,255,.4)',
-                  transition: 'box-shadow .28s, transform .2s',
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.boxShadow='0 0 55px rgba(124,108,255,.65)'; e.currentTarget.style.transform='translateY(-2px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.boxShadow='0 0 28px rgba(124,108,255,.4)'; e.currentTarget.style.transform='none'; }}>
-                  View my work <ArrowUpRight size={15} />
+              <div className="fade-up-4" style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                <a href="#works" style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 10, background: '#fff', color: '#000',
+                  padding: '18px 36px', borderRadius: 12, fontSize: 15, fontWeight: 600, textDecoration: 'none',
+                  transition: 'transform 0.2s', boxShadow: '0 10px 30px rgba(255,255,255,0.15)'
+                }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
+                  Explore Portfolio <ArrowUpRight size={18} />
                 </a>
-                <a href="#contact" style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8,
-                  background: 'rgba(255,255,255,.03)',
-                  border: `1px solid ${border}`,
-                  color: text, padding: '13px 30px',
-                  borderRadius: 12, fontSize: 13, fontWeight: 500,
-                  textDecoration: 'none', backdropFilter: 'blur(10px)',
-                  transition: 'border-color .25s, background .25s',
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(124,108,255,.5)'; e.currentTarget.style.background='rgba(124,108,255,.08)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor=border; e.currentTarget.style.background='rgba(255,255,255,.03)'; }}>
-                  Get in touch
+                <a href="#process" className="glass-btn" style={{
+                  display: 'inline-flex', alignItems: 'center', color: '#fff', padding: '18px 36px',
+                  borderRadius: 12, fontSize: 15, fontWeight: 500, textDecoration: 'none',
+                }}>
+                  <PlayCircle size={18} style={{ marginRight: 8 }} /> Our Process
                 </a>
-              </div>
-
-              {/* Stats */}
-              <div className="fu5" style={{ display: 'flex', gap: 0 }}>
-                {[['40+','Projects'],['35+','Clients'],['10+','Countries'],['5+','Years']].map(([n,l],i)=>(
-                  <div key={l} style={{
-                    paddingRight: 28, marginRight: 28,
-                    borderRight: i < 3 ? `1px solid ${border}` : 'none',
-                  }}>
-                    <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 28, color: '#fff', letterSpacing: '-.02em' }}>{n}</div>
-                    <div style={{ fontSize: 10, color: muted, letterSpacing: '.05em', marginTop: 2 }}>{l}</div>
-                  </div>
-                ))}
               </div>
             </div>
 
-            {/* Right: floating card cluster */}
-            <div className="fu3" style={{ position: 'relative', height: 440 }}>
-              {/* Central glow */}
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 320, height: 320, borderRadius: '50%', background: 'radial-gradient(circle,rgba(124,108,255,.18) 0%,transparent 70%)', pointerEvents: 'none' }} />
-
-              {/* Main stats card */}
-              <div style={{
-                position: 'absolute', top: '50%', left: '50%',
-                transform: 'translate(-50%,-50%)',
-                width: 270,
-                background: 'rgba(10,8,28,.9)',
-                border: '1px solid rgba(124,108,255,.3)',
-                borderRadius: 20, padding: 24,
-                backdropFilter: 'blur(24px)',
-                boxShadow: '0 20px 80px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.06)',
-                animation: 'floatY 5.5s ease-in-out infinite',
+            {/* Right: Realistic 3D Stats Card */}
+            <div className="fade-up-4" style={{ position: 'relative' }}>
+              <TiltCard style={{
+                background: 'rgba(20, 20, 25, 0.4)', border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 24, padding: 'clamp(24px, 4vw, 48px)', backdropFilter: 'blur(40px) saturate(150%)',
+                boxShadow: '0 30px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22 }}>
-                  <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg,#7c6cff,#a78bfa)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 16px rgba(124,108,255,.4)' }}>
-                    <Globe size={17} color="#fff" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 40 }}>
+                  <div style={{ width: 56, height: 56, borderRadius: 14, background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Globe size={26} color="#fff" />
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#e8e6ff' }}>40+ Live Websites</div>
-                    <div style={{ fontSize: 10, color: muted }}>Worldwide clients</div>
+                    <div style={{ fontSize: 26, fontWeight: 600, color: '#fff', fontFamily: "'Outfit', sans-serif" }}>Global Scale</div>
+                    <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>Operating across 14+ regions</div>
                   </div>
                 </div>
-                {[
-                  ['Job Portals', '#60a5fa', 80],
-                  ['Non-Profit',  '#34d399', 66],
-                  ['Healthcare',  '#c084fc', 30],
-                  ['Business',    '#fb923c', 52],
-                ].map(([l, c, w]) => (
-                  <div key={l} style={{ marginBottom: 10 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span style={{ fontSize: 10, color: muted }}>{l}</span>
-                      <span style={{ fontSize: 10, color: c }}>{w}%</span>
-                    </div>
-                    <div style={{ height: 3, background: 'rgba(255,255,255,.07)', borderRadius: 3 }}>
-                      <div style={{ height: '100%', width: `${w}%`, background: c, borderRadius: 3, boxShadow: `0 0 6px ${c}99` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
 
-              {/* Top-right float */}
-              <div style={{
-                position: 'absolute', top: 24, right: 0,
-                background: 'rgba(10,8,28,.92)',
-                border: '1px solid rgba(52,211,153,.22)',
-                borderRadius: 14, padding: '10px 16px',
-                backdropFilter: 'blur(18px)',
-                animation: 'floatY 4.2s ease-in-out infinite .9s',
-                boxShadow: '0 0 22px rgba(52,211,153,.12)',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e', display: 'inline-block' }} />
-                  <span style={{ fontSize: 11, fontWeight: 600, color: '#34d399' }}>Available Now</span>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+                  {[
+                    ['Live Platforms', '40+', '#3b82f6'],
+                    ['Client Retention', '99%', '#10b981'],
+                    ['Global Brands', '25+', '#f59e0b'],
+                    ['Years Active', '7+', '#8b5cf6']
+                  ].map(([l, v, c]) => (
+                    <div key={l}>
+                      <div style={{ fontSize: 'clamp(28px, 3vw, 36px)', fontWeight: 600, color: '#fff', fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.02em', marginBottom: 4 }}>{v}</div>
+                      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: c }} /> {l}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
+              </TiltCard>
+            </div>
 
-              {/* Bottom-left float */}
-              <div style={{
-                position: 'absolute', bottom: 24, left: 0,
-                background: 'rgba(10,8,28,.92)',
-                border: '1px solid rgba(251,146,60,.22)',
-                borderRadius: 14, padding: '10px 16px',
-                backdropFilter: 'blur(18px)',
-                animation: 'floatY 6.3s ease-in-out infinite 1.8s',
-                boxShadow: '0 0 22px rgba(251,146,60,.12)',
-              }}>
-                <div style={{ fontSize: 11, color: '#fb923c', fontWeight: 600, marginBottom: 2 }}>⭐ 5.0 Rating</div>
-                <div style={{ fontSize: 9, color: muted }}>35+ client reviews</div>
-              </div>
+          </div>
+        </section>
 
-              {/* Top-left small float */}
-              <div style={{
-                position: 'absolute', top: 60, left: 0,
-                background: 'rgba(10,8,28,.92)',
-                border: '1px solid rgba(124,108,255,.2)',
-                borderRadius: 14, padding: '10px 16px',
-                backdropFilter: 'blur(18px)',
-                animation: 'floatY 5s ease-in-out infinite 2.4s',
-                boxShadow: '0 0 18px rgba(124,108,255,.1)',
-              }}>
-                <div style={{ fontSize: 11, color: '#a78bfa', fontWeight: 600, marginBottom: 2 }}>🌍 10+ Countries</div>
-                <div style={{ fontSize: 9, color: muted }}>Global reach</div>
-              </div>
+        {/* ── PROCESS SECTION ──────────────────────────────────────────── */}
+        <section id="process" style={{ padding: '100px 0', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'linear-gradient(to bottom, rgba(10,10,12,0.8), transparent)' }}>
+          <div className="section-container">
+            <div style={{ fontSize: 13, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#10b981', marginBottom: 20, fontWeight: 600 }}>Methodology</div>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 'clamp(36px, 5vw, 54px)', fontWeight: 400, color: '#fff', marginBottom: 60, letterSpacing: '-0.02em', maxWidth: 600 }}>
+              We don't guess. <br/><span style={{ color: 'rgba(255,255,255,0.4)' }}>We engineer execution.</span>
+            </h2>
+
+            <div className="grid-3">
+              {[
+                { step: '01', title: 'Discovery & Strategy', icon: <Fingerprint size={28}/>, desc: 'Deep-dive analysis of market fit, user personas, and technical requirements before writing a single line of code.' },
+                { step: '02', title: 'Architecture & UX', icon: <Layers size={28}/>, desc: 'Crafting high-fidelity prototypes and defining scalable infrastructure that supports long-term growth.' },
+                { step: '03', title: 'Full-Stack Delivery', icon: <Activity size={28}/>, desc: 'Rigorous engineering utilizing React, Next.js, and headless backends with uncompromising performance standards.' }
+              ].map((item, i) => (
+                <div key={i} className="glass-btn" style={{ padding: '40px', borderRadius: 24 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 30 }}>
+                    <div style={{ color: '#fff', padding: 12, background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0))', borderRadius: 14, border: '1px solid rgba(255,255,255,0.1)' }}>{item.icon}</div>
+                    <div style={{ fontSize: 32, fontFamily: "'Outfit', sans-serif", fontWeight: 700, color: 'rgba(255,255,255,0.1)' }}>{item.step}</div>
+                  </div>
+                  <h3 style={{ fontSize: 20, color: '#fff', fontFamily: "'Outfit', sans-serif", marginBottom: 12, fontWeight: 500 }}>{item.title}</h3>
+                  <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7 }}>{item.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* ── SERVICES ─────────────────────────────────────────────────── */}
-        <section style={{ borderTop: `1px solid ${border}`, padding: '72px 28px', maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', border: `1px solid ${border}`, borderRadius: 16, overflow: 'hidden' }}>
-            {[
-              { icon: <Globe size={20}/>,      title: 'Custom Dev',   desc: 'Bespoke WordPress solutions from scratch' },
-              { icon: <Zap size={20}/>,        title: 'Performance',  desc: 'Optimized Core Web Vitals & lightning loads' },
-              { icon: <Smartphone size={20}/>, title: 'Mobile First', desc: 'Pixel-perfect on every screen size' },
-              { icon: <Code size={20}/>,       title: 'Clean Code',   desc: 'Maintainable, documented, standards-ready' },
-            ].map((s, i) => (
-              <div key={i} style={{
-                padding: '34px 26px', background: surface,
-                borderRight: i < 3 ? `1px solid ${border}` : 'none',
-                transition: 'background .22s',
-              }}
-                onMouseEnter={e => e.currentTarget.style.background='rgba(124,108,255,.07)'}
-                onMouseLeave={e => e.currentTarget.style.background=surface}>
-                <div style={{ color: accent, marginBottom: 14 }}>{s.icon}</div>
-                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 7, color: text }}>{s.title}</div>
-                <div style={{ fontSize: 12, color: muted, lineHeight: 1.65 }}>{s.desc}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── PORTFOLIO ────────────────────────────────────────────────── */}
-        <section id="work" style={{ padding: '0 28px 100px', maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ borderTop: `1px solid ${border}`, paddingTop: 68, marginBottom: 36 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 18 }}>
+        {/* ── WORKS ────────────────────────────────────────────────────── */}
+        <section id="works" style={{ padding: '60px 0 120px' }}>
+          <div className="section-container">
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, marginBottom: 60 }}>
               <div>
-                <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: muted, marginBottom: 10, fontWeight: 700 }}>Selected Work</div>
-                <h2 style={{ fontFamily: "'DM Serif Display',serif", fontSize: 'clamp(28px,3.8vw,48px)', fontWeight: 400, letterSpacing: '-.02em', lineHeight: 1.1 }}>
-                  {filtered.length} projects
+                <div style={{ fontSize: 13, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#3b82f6', marginBottom: 20, fontWeight: 600 }}>Selected Work</div>
+                <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 'clamp(36px, 5vw, 54px)', fontWeight: 400, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+                  Our latest deployments.
                 </h2>
               </div>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', background: 'rgba(255,255,255,0.03)', padding: 6, borderRadius: 40, border: '1px solid rgba(255,255,255,0.05)' }}>
                 {categories.map(c => (
                   <button key={c.id} onClick={() => setCategory(c.id)} style={{
-                    padding: '7px 15px', borderRadius: 8,
-                    border: `1px solid ${activeCategory === c.id ? accent : border}`,
-                    background: activeCategory === c.id ? 'rgba(124,108,255,.15)' : 'transparent',
-                    color: activeCategory === c.id ? accent : muted,
-                    fontSize: 12, fontWeight: 500, cursor: 'pointer',
-                    transition: 'all .2s', fontFamily: "'DM Sans',sans-serif",
+                    padding: '12px 24px', borderRadius: 30,
+                    background: activeCategory === c.id ? '#fff' : 'transparent',
+                    color: activeCategory === c.id ? '#000' : 'rgba(255,255,255,0.6)',
+                    border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'all 0.3s ease',
                   }}>
-                    {c.label} <span style={{ opacity: .6, fontSize: 10 }}>{c.count}</span>
+                    {c.label}
                   </button>
                 ))}
               </div>
             </div>
-          </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px,1fr))', gap: 16 }}>
-            {filtered.map((site, i) => (
-              <div key={site.url} className="fi" style={{ animationDelay: `${i * 0.04}s` }}>
-                <SiteCard site={site} />
-              </div>
-            ))}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px,1fr))', gap: 32 }}>
+              {filtered.map((site, i) => (
+                <div key={site.url} style={{ animation: `fadeUp 0.8s ease backwards ${(i * 0.1)}s` }}>
+                  <SiteCard site={site} />
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* ── ABOUT ────────────────────────────────────────────────────── */}
-        <section id="about" style={{ borderTop: `1px solid ${border}` }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 28px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'start' }}>
+        {/* ── ABOUT AGENCY ─────────────────────────────────────────────── */}
+        <section id="agency" style={{ borderTop: `1px solid rgba(255,255,255,0.05)`, padding: '120px 0' }}>
+          <div className="section-container grid-2" style={{ alignItems: 'center' }}>
             <div>
-              <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: muted, marginBottom: 12, fontWeight: 700 }}>About</div>
-              <h2 style={{ fontFamily: "'DM Serif Display',serif", fontSize: 'clamp(24px,3.2vw,40px)', fontWeight: 400, letterSpacing: '-.02em', lineHeight: 1.18, marginBottom: 22 }}>
-                Building the web,<br /><em style={{ fontStyle: 'italic', color: muted }}>one site at a time.</em>
+              <div style={{ fontSize: 13, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#8b5cf6', marginBottom: 20, fontWeight: 600 }}>The Agency</div>
+              <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 'clamp(36px, 5vw, 54px)', fontWeight: 400, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 30 }}>
+                Driven by perfection. <br/><span style={{ color: 'rgba(255,255,255,0.3)' }}>Backed by data.</span>
               </h2>
-              <p style={{ fontSize: 14, color: muted, lineHeight: 1.85, marginBottom: 14 }}>I'm Talha Ahmed — a WordPress developer focused on fast, polished websites for businesses worldwide. Clean code, thoughtful design, results that move the needle.</p>
-              <p style={{ fontSize: 14, color: muted, lineHeight: 1.85, marginBottom: 28 }}>From executive job portals to humanitarian aid platforms, every project gets the same level of craft.</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                {['WordPress','PHP','JavaScript','React','Elementor','WooCommerce','SEO','UI/UX'].map(s => (
-                  <span key={s} style={{ padding: '5px 11px', borderRadius: 6, border: `1px solid ${border}`, fontSize: 11, color: muted, fontFamily: "'JetBrains Mono',monospace", transition: 'border-color .2s, color .2s' }}
-                    onMouseEnter={e=>{ e.currentTarget.style.borderColor=accent+'77'; e.currentTarget.style.color=accent; }}
-                    onMouseLeave={e=>{ e.currentTarget.style.borderColor=border; e.currentTarget.style.color=muted; }}>
+              <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.6)', lineHeight: 1.8, marginBottom: 20, fontWeight: 300 }}>
+                Nexus Digital was founded with a singular mission: to eliminate mediocre web experiences. We combine enterprise-grade engineering with cutting-edge visual design to create platforms that dominate their respective markets.
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 40 }}>
+                {['React.js','Node.js','Next.js','TypeScript','WebGL','PostgreSQL','Cloudflare'].map(s => (
+                  <span key={s} style={{ padding: '10px 18px', borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', fontSize: 14, color: '#fff', fontFamily: "'Outfit',sans-serif" }}>
                     {s}
                   </span>
                 ))}
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              {[['40+','Websites built'],['35+','Happy clients'],['10+','Countries'],['5+','Years exp']].map(([n,l])=>(
-                <div key={l} style={{ padding: 26, borderRadius: 14, border: `1px solid ${border}`, background: surface, transition: 'border-color .25s, background .25s' }}
-                  onMouseEnter={e=>{ e.currentTarget.style.borderColor=accent+'55'; e.currentTarget.style.background='rgba(124,108,255,.06)'; }}
-                  onMouseLeave={e=>{ e.currentTarget.style.borderColor=border; e.currentTarget.style.background=surface; }}>
-                  <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 38, color: '#fff', letterSpacing: '-.03em' }}>{n}</div>
-                  <div style={{ fontSize: 11, color: muted, marginTop: 4 }}>{l}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── TESTIMONIALS ─────────────────────────────────────────────── */}
-        <section style={{ borderTop: `1px solid ${border}` }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 28px' }}>
-            <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: muted, marginBottom: 42, fontWeight: 700 }}>Client Feedback</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: 16 }}>
-              {[
-                { name:'John Smith',    role:'CEO, PrimePath Recruitment', text:'Talha delivered an exceptional job portal. Attention to detail that truly exceeded expectations.' },
-                { name:'Sarah Johnson', role:'Director, Tulsa Nonprofit',  text:'Outstanding work on our charity site. The design perfectly captures our mission.' },
-                { name:'Mike Chen',     role:'Owner, Divers Health',        text:'Professional, creative, and reliable. Our healthcare website has never looked better.' },
-              ].map((t,i)=>(
-                <div key={i} style={{ padding: 26, borderRadius: 14, border: `1px solid ${border}`, background: surface, backdropFilter: 'blur(10px)', transition: 'border-color .25s' }}
-                  onMouseEnter={e=>e.currentTarget.style.borderColor=accent+'44'}
-                  onMouseLeave={e=>e.currentTarget.style.borderColor=border}>
-                  <div style={{ display:'flex', gap:3, marginBottom:14 }}>{[...Array(5)].map((_,j)=><Star key={j} size={11} fill='#f59e0b' color='#f59e0b'/>)}</div>
-                  <p style={{ fontSize:13, color:muted, lineHeight:1.75, marginBottom:18 }}>"{t.text}"</p>
-                  <div style={{ fontSize:13, fontWeight:600, color:text }}>{t.name}</div>
-                  <div style={{ fontSize:10, color:muted, marginTop:3 }}>{t.role}</div>
+            <div className="grid-2" style={{ gap: 20 }}>
+              {[['Founded','2019'],['Core Team','12+ Experts'],['Tech Stack','Modern JS'],['Uptime','99.9%']].map(([l,n]) => (
+                <div key={l} className="glass-btn" style={{ padding: '40px 30px', borderRadius: 20 }}>
+                  <div style={{ fontFamily: "'Outfit',sans-serif", fontSize: 36, fontWeight: 400, color: '#fff', letterSpacing: '-0.03em', marginBottom: 12 }}>{n}</div>
+                  <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{l}</div>
                 </div>
               ))}
             </div>
@@ -689,80 +651,68 @@ export default function App() {
         </section>
 
         {/* ── CONTACT ──────────────────────────────────────────────────── */}
-        <section id="contact" style={{ borderTop: `1px solid ${border}` }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 28px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'start' }}>
+        <section id="contact" style={{ borderTop: `1px solid rgba(255,255,255,0.05)`, padding: '120px 0' }}>
+          <div className="section-container grid-2" style={{ gap: 80 }}>
             <div>
-              <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: muted, marginBottom: 12, fontWeight: 700 }}>Contact</div>
-              <h2 style={{ fontFamily: "'DM Serif Display',serif", fontSize: 'clamp(24px,3.2vw,40px)', fontWeight: 400, letterSpacing: '-.02em', lineHeight: 1.18, marginBottom: 22 }}>
-                Let's build<br /><em style={{ fontStyle: 'italic', color: muted }}>something great.</em>
+              <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 'clamp(44px, 6vw, 72px)', fontWeight: 400, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 30 }}>
+                Ready to scale? <br/>Let's talk.
               </h2>
-              <p style={{ fontSize: 14, color: muted, lineHeight: 1.8, marginBottom: 34 }}>Have a project in mind? I'd love to hear about it. Reach out and let's get started.</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, marginBottom: 60, fontWeight: 300, maxWidth: 450 }}>
+                Partner with us to build digital products that completely outperform your competition.
+              </p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
                 {[
-                  { icon:<Mail size={14}/>,   label:'Email',    val:'talha.ahmed@example.com' },
-                  { icon:<Phone size={14}/>,  label:'Phone',    val:'+1 (555) 123-4567' },
-                  { icon:<MapPin size={14}/>, label:'Location', val:'Remote / Worldwide' },
-                ].map(({icon,label,val})=>(
-                  <div key={label} style={{ display:'flex', alignItems:'center', gap:14 }}>
-                    <div style={{ width:34, height:34, borderRadius:9, border:`1px solid ${border}`, background:'rgba(124,108,255,.08)', display:'flex', alignItems:'center', justifyContent:'center', color:accent }}>{icon}</div>
+                  { icon:<Mail size={20}/>,   label:'Inquiries',    val:'hello@nexusdigital.agency' },
+                  { icon:<Phone size={20}/>,  label:'Global Line',  val:'+1 (555) 000-0000' },
+                  { icon:<MapPin size={20}/>, label:'Headquarters', val:'New York / Remote Worldwide' },
+                ].map(({icon,label,val}) => (
+                  <div key={label} style={{ display:'flex', alignItems:'center', gap:24 }}>
+                    <div style={{ width: 56, height: 56, borderRadius: 14, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>{icon}</div>
                     <div>
-                      <div style={{ fontSize:9, color:muted, letterSpacing:'.1em', textTransform:'uppercase', marginBottom:2 }}>{label}</div>
-                      <div style={{ fontSize:13, fontWeight:500, color:text }}>{val}</div>
+                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, fontWeight: 600 }}>{label}</div>
+                      <div style={{ fontSize: 18, fontWeight: 500, color: '#fff', fontFamily: "'Outfit',sans-serif" }}>{val}</div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div style={{ background:'rgba(8,6,22,.75)', border:`1px solid ${border}`, borderRadius:16, padding:30, backdropFilter:'blur(18px)' }}>
-              <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-                {['Your Name','Your Email','Project Type'].map(p=>(
-                  <input key={p} placeholder={p} style={{
-                    padding:'11px 14px', borderRadius:10,
-                    border:`1px solid ${border}`,
-                    background:'rgba(255,255,255,.03)', color:text,
-                    fontSize:13, outline:'none',
-                    fontFamily:"'DM Sans',sans-serif", transition:'border-color .2s',
-                  }}
-                    onFocus={e=>e.target.style.borderColor=accent+'88'}
-                    onBlur={e=>e.target.style.borderColor=border} />
-                ))}
-                <textarea rows={4} placeholder="Tell me about your project" style={{
-                  padding:'11px 14px', borderRadius:10,
-                  border:`1px solid ${border}`,
-                  background:'rgba(255,255,255,.03)', color:text,
-                  fontSize:13, outline:'none', resize:'none',
-                  fontFamily:"'DM Sans',sans-serif", transition:'border-color .2s',
-                }}
-                  onFocus={e=>e.target.style.borderColor=accent+'88'}
-                  onBlur={e=>e.target.style.borderColor=border} />
+            <TiltCard style={{ background: 'rgba(15, 15, 20, 0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 24, padding: 'clamp(30px, 5vw, 56px)', backdropFilter: 'blur(30px)' }}>
+              <div style={{ display:'flex', flexDirection:'column', gap: 24 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 24 }}>
+                  <input placeholder="First Name" style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.1)', padding:'18px 24px', borderRadius:14, color:'#fff', outline:'none', fontSize: 15, transition: 'border 0.3s' }} onFocus={e=>e.target.style.borderColor='#3b82f6'} onBlur={e=>e.target.style.borderColor='rgba(255,255,255,0.1)'}/>
+                  <input placeholder="Last Name" style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.1)', padding:'18px 24px', borderRadius:14, color:'#fff', outline:'none', fontSize: 15, transition: 'border 0.3s' }} onFocus={e=>e.target.style.borderColor='#3b82f6'} onBlur={e=>e.target.style.borderColor='rgba(255,255,255,0.1)'}/>
+                </div>
+                <input placeholder="Company / Organization" style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.1)', padding:'18px 24px', borderRadius:14, color:'#fff', outline:'none', fontSize: 15, transition: 'border 0.3s' }} onFocus={e=>e.target.style.borderColor='#3b82f6'} onBlur={e=>e.target.style.borderColor='rgba(255,255,255,0.1)'}/>
+                <input placeholder="Email Address" style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.1)', padding:'18px 24px', borderRadius:14, color:'#fff', outline:'none', fontSize: 15, transition: 'border 0.3s' }} onFocus={e=>e.target.style.borderColor='#3b82f6'} onBlur={e=>e.target.style.borderColor='rgba(255,255,255,0.1)'}/>
+                <textarea rows={5} placeholder="Tell us about your project..." style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.1)', padding:'18px 24px', borderRadius:14, color:'#fff', outline:'none', fontSize: 15, resize: 'none', transition: 'border 0.3s' }} onFocus={e=>e.target.style.borderColor='#3b82f6'} onBlur={e=>e.target.style.borderColor='rgba(255,255,255,0.1)'}/>
+                
                 <button style={{
-                  padding:'13px', borderRadius:10,
-                  background:'linear-gradient(135deg,#7c6cff,#a78bfa)',
-                  color:'#fff', fontSize:13, fontWeight:600,
-                  cursor:'pointer', border:'none',
-                  fontFamily:"'DM Sans',sans-serif",
-                  boxShadow:'0 0 22px rgba(124,108,255,.32)',
-                  transition:'box-shadow .25s, transform .2s',
-                }}
-                  onMouseEnter={e=>{ e.target.style.boxShadow='0 0 44px rgba(124,108,255,.6)'; e.target.style.transform='translateY(-1px)'; }}
-                  onMouseLeave={e=>{ e.target.style.boxShadow='0 0 22px rgba(124,108,255,.32)'; e.target.style.transform='none'; }}>
-                  Send message →
+                  background: '#fff', color: '#000', padding: '20px', borderRadius: 14,
+                  fontSize: 16, fontWeight: 600, border: 'none', cursor: 'pointer',
+                  transition: 'transform 0.2s', marginTop: 10
+                }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
+                  Submit Request →
                 </button>
               </div>
-            </div>
+            </TiltCard>
           </div>
         </section>
 
         {/* ── FOOTER ───────────────────────────────────────────────────── */}
-        <footer style={{ borderTop:`1px solid ${border}`, maxWidth:1100, margin:'0 auto', padding:'22px 28px' }}>
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:14 }}>
-            <span style={{ fontSize:11, color:muted }}>© 2024 Talha Ahmed · All rights reserved.</span>
-            <div style={{ display:'flex', gap:20 }}>
-              {[<Linkedin size={14}/>, <Github size={14}/>, <Twitter size={14}/>].map((icon,i)=>(
-                <a key={i} href="#" style={{ color:muted, textDecoration:'none', transition:'color .2s' }}
-                  onMouseEnter={e=>e.currentTarget.style.color='#e8e6ff'}
-                  onMouseLeave={e=>e.currentTarget.style.color=muted}>{icon}</a>
+        <footer style={{ borderTop: `1px solid rgba(255,255,255,0.05)`, padding: '60px 0', background: '#000' }}>
+          <div className="section-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 30 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontSize: 12, fontWeight: 700, fontFamily: "'Outfit',sans-serif" }}>NX</div>
+              <span style={{ fontSize: 15, color: 'rgba(255,255,255,0.4)' }}>© 2024 Nexus Digital Agency. All Rights Reserved.</span>
+            </div>
+            <div style={{ display: 'flex', gap: 32 }}>
+              {[{i:<Linkedin size={20}/>,l:'LinkedIn'}, {i:<Twitter size={20}/>,l:'Twitter'}, {i:<Github size={20}/>,l:'GitHub'}].map((item,i)=>(
+                <a key={i} href="#" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', transition: 'color 0.2s' }}
+                  onMouseEnter={e=>e.currentTarget.style.color='#fff'} onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.4)'}>
+                  {item.i}
+                </a>
               ))}
             </div>
           </div>
