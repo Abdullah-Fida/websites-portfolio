@@ -3,7 +3,7 @@ import {
   Globe, ExternalLink, Mail, Phone, MapPin,
   Linkedin, Github, Twitter, Code, Smartphone,
   Zap, Users, Star, ArrowUpRight, Monitor, Layers, Shield,
-  CheckCircle, PlayCircle, Fingerprint, Activity 
+  CheckCircle, PlayCircle, Fingerprint, Activity
 } from 'lucide-react';
 
 // ── Screenshot API ────────────────────────────────────────────────────────
@@ -11,31 +11,31 @@ const screenshotUrl = (url) =>
   `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
 
 const categoryMeta = {
-  job:       { label: 'Platform',  accent: '#3b82f6' },
+  job: { label: 'Platform', accent: '#3b82f6' },
   nonprofit: { label: 'Non-Profit', accent: '#10b981' },
-  health:    { label: 'Healthcare', accent: '#8b5cf6' },
-  other:     { label: 'Corporate',  accent: '#f59e0b' },
+  health: { label: 'Healthcare', accent: '#8b5cf6' },
+  other: { label: 'Corporate', accent: '#f59e0b' },
 };
 
 const websites = {
   jobPortals: [
-    { name: 'Accountant Hire',    url: 'https://accountanthire.com',       category: 'job',       description: 'Specialized accounting recruitment platform' },
-    { name: 'Deep Dive Hire',     url: 'https://deepdivehire.com',         category: 'job',       description: 'Tech talent acquisition system' },
-    { name: 'Keyway Solutions',   url: 'https://keywaysolutions.com',      category: 'job',       description: 'IT recruitment agency portal' },
-    { name: 'Capstone Recruiter', url: 'https://capstonerecruiter.com',    category: 'job',       description: 'Graduate networking and recruitment' },
+    { name: 'Accountant Hire', url: 'https://accountanthire.com', category: 'job', description: 'Specialized accounting recruitment platform' },
+    { name: 'Deep Dive Hire', url: 'https://deepdivehire.com', category: 'job', description: 'Tech talent acquisition system' },
+    { name: 'Keyway Solutions', url: 'https://keywaysolutions.com', category: 'job', description: 'IT recruitment agency portal' },
+    { name: 'Capstone Recruiter', url: 'https://capstonerecruiter.com', category: 'job', description: 'Graduate networking and recruitment' },
   ],
   nonProfit: [
-    { name: 'Tulsa Nonprofit',    url: 'https://tulsanonprofit.org',       category: 'nonprofit', description: 'Community support and funding platform' },
-    { name: 'Fund It Showit',     url: 'https://funditshowit.com',         category: 'nonprofit', description: 'Creative arts fundraising initiative' },
-    { name: 'Sponsor Funded',     url: 'https://sponsorfunded.com',        category: 'nonprofit', description: 'Global sponsorship hub' },
+    { name: 'Tulsa Nonprofit', url: 'https://tulsanonprofit.org', category: 'nonprofit', description: 'Community support and funding platform' },
+    { name: 'Fund It Showit', url: 'https://funditshowit.com', category: 'nonprofit', description: 'Creative arts fundraising initiative' },
+    { name: 'Sponsor Funded', url: 'https://sponsorfunded.com', category: 'nonprofit', description: 'Global sponsorship hub' },
   ],
   healthCare: [
     { name: 'Prestigious Health', url: 'https://prestigioushomehealth.com', category: 'health', description: 'Elderly care & healthcare services' },
   ],
   other: [
-    { name: 'Geo Solutions',         url: 'https://geosolutionspk.com',     category: 'other', description: 'Geospatial & satellite imaging data' },
+    { name: 'Geo Solutions', url: 'https://geosolutionspk.com', category: 'other', description: 'Geospatial & satellite imaging data' },
     { name: 'A New View Properties', url: 'https://anewviewproperties.com', category: 'other', description: 'Luxury real estate agency' },
-    { name: 'Zuid 55',               url: 'https://zuid55.com',             category: 'other', description: 'Commercial real estate portfolio' },
+    { name: 'Zuid 55', url: 'https://zuid55.com', category: 'other', description: 'Commercial real estate portfolio' },
   ],
 };
 
@@ -55,7 +55,8 @@ function InteractiveNetwork() {
     let particles = [];
     let rafId;
 
-    let mouse = { x: null, y: null, radius: 250 }; // Interaction radius
+    let mouse = { x: null, y: null, radius: 300, isMoving: false }; // Increased Interaction radius
+    let mouseTimeout;
 
     const resize = () => {
       W = canvas.width = window.innerWidth;
@@ -65,58 +66,88 @@ function InteractiveNetwork() {
 
     const init = () => {
       particles = [];
-      const density = window.innerWidth < 768 ? 6000 : 12000; 
+      const density = window.innerWidth < 768 ? 4000 : 8000; // More particles
       const numParticles = Math.floor((W * H) / density);
-      
+
       for (let i = 0; i < numParticles; i++) {
         particles.push({
           x: Math.random() * W,
           y: Math.random() * H,
-          vx: (Math.random() - 0.5) * 0.7,
-          vy: (Math.random() - 0.5) * 0.7,
+          vx: (Math.random() - 0.5) * 1.2, // Slightly faster base movement
+          vy: (Math.random() - 0.5) * 1.2,
           baseX: Math.random() * W,
           baseY: Math.random() * H,
-          size: Math.random() * 2.5 + 0.5,
-          color: Math.random() > 0.6 ? [59, 130, 246] : (Math.random() > 0.4 ? [139, 92, 246] : [255, 255, 255])
+          size: Math.random() * 3 + 1, // Larger particles
+          color: Math.random() > 0.7 ? [59, 130, 246] : (Math.random() > 0.4 ? [139, 92, 246] : (Math.random() > 0.2 ? [16, 185, 129] : [255, 255, 255])) // Added green
         });
       }
     };
 
     const draw = () => {
       ctx.clearRect(0, 0, W, H);
-      
+
+      // Global glowing effect
+      ctx.globalCompositeOperation = 'screen';
+
       for (let i = 0; i < particles.length; i++) {
         let p = particles[i];
         p.x += p.vx;
         p.y += p.vy;
 
-        // Soft bounce off walls
-        if (p.x < 0 || p.x > W) p.vx *= -1;
-        if (p.y < 0 || p.y > H) p.vy *= -1;
+        // Soft bounce off walls with slight dampening
+        if (p.x < 0) { p.x = 0; p.vx *= -1; }
+        if (p.x > W) { p.x = W; p.vx *= -1; }
+        if (p.y < 0) { p.y = 0; p.vy *= -1; }
+        if (p.y > H) { p.y = H; p.vy *= -1; }
+
+        // Natural dampening to prevent infinite acceleration
+        p.vx *= 0.99;
+        p.vy *= 0.99;
+
+        // Ensure minimum speed
+        const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+        if (speed < 0.2) {
+          p.vx += (Math.random() - 0.5) * 0.1;
+          p.vy += (Math.random() - 0.5) * 0.1;
+        }
+
 
         // Interaction with mouse - Liquid flow algorithm
+        let isHighlighted = false;
         if (mouse.x != null) {
           let dx = mouse.x - p.x;
           let dy = mouse.y - p.y;
           let distance = Math.sqrt(dx * dx + dy * dy);
-          
+
           if (distance < mouse.radius) {
+            isHighlighted = true;
             const forceDirectionX = dx / distance;
             const forceDirectionY = dy / distance;
+            // The closer, the stronger the force
             const force = (mouse.radius - distance) / mouse.radius;
-            // Negative push to repel particles like liquid splitting
-            const pushX = forceDirectionX * force * 3;
-            const pushY = forceDirectionY * force * 3;
-            
-            p.x -= pushX;
-            p.y -= pushY;
-            // Particles light up slightly
-            ctx.fillStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, 0.9)`;
+
+            // Push particles away (creates a wake)
+            const pushMultiplier = mouse.isMoving ? 15 : 5; // Stronger push when moving
+            const pushX = forceDirectionX * force * pushMultiplier;
+            const pushY = forceDirectionY * force * pushMultiplier;
+
+            // Add mouse force to velocity instead of just moving position (more fluid)
+            p.vx -= pushX * 0.05;
+            p.vy -= pushY * 0.05;
+
+            // Draw a vibrant halo around particles near mouse
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, ${0.4 * force})`;
+            ctx.fill();
+
+            // Particles light up intensely
+            ctx.fillStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, ${0.5 + Math.random() * 0.5})`;
           } else {
-            ctx.fillStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, 0.3)`;
+            ctx.fillStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, 0.4)`;
           }
         } else {
-          ctx.fillStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, 0.3)`;
+          ctx.fillStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, 0.4)`;
         }
 
         ctx.beginPath();
@@ -124,24 +155,48 @@ function InteractiveNetwork() {
         ctx.fill();
 
         // Connect nearby particles to create fluid web
-        for (let j = i; j < particles.length; j++) {
+        const connectionRadius = isHighlighted ? 180 : 130; // Further connections near mouse
+        for (let j = i + 1; j < particles.length; j++) {
           let p2 = particles[j];
           let dX = p.x - p2.x;
           let dY = p.y - p2.y;
           let distance = Math.sqrt(dX * dX + dY * dY);
-          
+
           // Only connect if within range
-          if (distance < 110) {
-            let opacity = 1 - (distance / 110);
+          if (distance < connectionRadius) {
+            let opacity = 1 - (distance / connectionRadius);
+            // Stronger, thicker lines near mouse
+            const lineOpacity = isHighlighted ? opacity * 0.6 : opacity * 0.2;
+            const lineWidth = isHighlighted ? 1.5 : 0.8;
+
+            // Create gradient line between different colored particles
+            const grad = ctx.createLinearGradient(p.x, p.y, p2.x, p2.y);
+            grad.addColorStop(0, `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, ${lineOpacity})`);
+            grad.addColorStop(1, `rgba(${p2.color[0]}, ${p2.color[1]}, ${p2.color[2]}, ${lineOpacity})`);
+
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, ${opacity * 0.25})`;
-            ctx.lineWidth = 0.8;
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = lineWidth;
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(p2.x, p2.y);
             ctx.stroke();
           }
         }
       }
+
+      // Draw a subtle larger glow following the mouse
+      if (mouse.x !== null) {
+        ctx.beginPath();
+        const mouseGlow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, mouse.radius * 0.8);
+        mouseGlow.addColorStop(0, 'rgba(59, 130, 246, 0.08)');
+        mouseGlow.addColorStop(0.5, 'rgba(139, 92, 246, 0.03)');
+        mouseGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = mouseGlow;
+        ctx.arc(mouse.x, mouse.y, mouse.radius * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.globalCompositeOperation = 'source-over';
       rafId = requestAnimationFrame(draw);
     };
 
@@ -149,18 +204,27 @@ function InteractiveNetwork() {
     window.addEventListener('mousemove', (e) => {
       mouse.x = e.clientX;
       mouse.y = e.clientY;
+      mouse.isMoving = true;
+
+      clearTimeout(mouseTimeout);
+      mouseTimeout = setTimeout(() => {
+        mouse.isMoving = false;
+      }, 100);
     });
     window.addEventListener('mouseout', () => {
       mouse.x = null;
       mouse.y = null;
+      mouse.isMoving = false;
     });
-    
+
     resize();
     draw();
 
     return () => {
       window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', resize); // Cleanup
       cancelAnimationFrame(rafId);
+      clearTimeout(mouseTimeout);
     };
   }, []);
 
@@ -178,10 +242,10 @@ function TiltCard({ children, style }) {
     const rect = cardRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
+
     const rotateY = -1 * ((x / rect.width) * 10 - 5);
     const rotateX = ((y / rect.height) * 10 - 5);
-    
+
     setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`);
     setGlare({ x: (x / rect.width) * 100, y: (y / rect.height) * 100, opacity: 0.2 });
   };
@@ -296,9 +360,16 @@ function SiteCard({ site }) {
 
 // ── App ───────────────────────────────────────────────────────────────────
 export default function App() {
+  const [isLoading, setIsLoading] = useState(true);
   const [activeCategory, setCategory] = useState('all');
   const [scrollY, setScrollY] = useState(0);
   const [mobileMenu, setMobileMenu] = useState(false);
+
+  useEffect(() => {
+    // Premium cinematic loader delay
+    const timer = setTimeout(() => setIsLoading(false), 2200);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const fn = () => setScrollY(window.scrollY);
@@ -311,11 +382,11 @@ export default function App() {
     : allWebsites.filter(s => s.category === activeCategory);
 
   const categories = [
-    { id: 'all',       label: 'All Works' },
-    { id: 'job',       label: 'Platforms' },
+    { id: 'all', label: 'All Works' },
+    { id: 'job', label: 'Platforms' },
     { id: 'nonprofit', label: 'Non-Profit' },
-    { id: 'health',    label: 'Healthcare' },
-    { id: 'other',     label: 'Corporate' },
+    { id: 'health', label: 'Healthcare' },
+    { id: 'other', label: 'Corporate' },
   ];
 
   return (
@@ -339,12 +410,30 @@ export default function App() {
           66% { transform: translate(-5%, 5%) scale(0.9) rotate(-2deg); }
           100% { transform: translate(0, 0) scale(1) rotate(0deg); }
         }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(50px); filter: blur(10px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
         
-        .fade-up-1 { animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.1s; opacity: 0; }
-        .fade-up-2 { animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.2s; opacity: 0; }
-        .fade-up-3 { animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.3s; opacity: 0; }
-        .fade-up-4 { animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.4s; opacity: 0; }
+        .fade-up-1 { animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.2s; opacity: 0; }
+        .fade-up-2 { animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.4s; opacity: 0; }
+        .fade-up-3 { animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.6s; opacity: 0; }
+        .fade-up-4 { animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.8s; opacity: 0; }
+        
+        /* Premium Cinematic Loader */
+        .loader {
+          position: fixed; inset: 0; z-index: 9999; background: #030303;
+          display: flex; align-items: center; justify-content: center;
+          clip-path: inset(0 0 0 0);
+          transition: clip-path 1.2s cubic-bezier(0.85, 0, 0.15, 1) 0.3s;
+        }
+        .loader.hidden { clip-path: inset(0 0 100% 0); pointer-events: none; }
+        .loader-logo-wrap { overflow: hidden; padding: 20px; }
+        .loader-logo {
+          font-family: 'Outfit', sans-serif; font-size: clamp(28px, 5vw, 48px); font-weight: 400; color: #fff;
+          letter-spacing: 0.3em; text-transform: uppercase;
+          transform: translateY(110%);
+          animation: slideUpTitle 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.2s, fadeOutTitle 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards 1.8s;
+        }
+        @keyframes slideUpTitle { to { transform: translateY(0); } }
+        @keyframes fadeOutTitle { to { opacity: 0; filter: blur(10px); transform: translateY(-20px); } }
         
         /* Realistic frosted glass button */
         .glass-btn {
@@ -373,13 +462,15 @@ export default function App() {
           position: relative; color: rgba(255,255,255,0.6); text-decoration: none;
           font-weight: 500; font-size: 14px; letter-spacing: 0.02em; padding: 6px 12px;
           transition: color 0.3s ease;
+          display: inline-block;
         }
         .nav-link:hover { color: #fff; }
         .nav-link::after {
-          content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 1px;
-          background: #3b82f6; transition: all 0.3s ease; transform: translateX(-50%);
+          content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px;
+          background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: all 0.3s ease; transform: translateX(-50%);
+          border-radius: 2px;
         }
-        .nav-link:hover::after { width: 80%; }
+        .nav-link:hover::after { width: 80%; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
 
         /* Responsive Layout Utilities */
         .section-container { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
@@ -403,6 +494,15 @@ export default function App() {
         }
       `}</style>
 
+      {/* ── PREMIUM CINEMATIC LOADER ────────────────────────────────────────────── */}
+      <div className={`loader ${!isLoading ? 'hidden' : ''}`}>
+        <div className="loader-logo-wrap">
+           <div className="loader-logo">
+             OnT Sols<span style={{ color: '#3b82f6' }}>.</span>
+           </div>
+        </div>
+      </div>
+
       {/* ── BACKGROUND INCANDESCENCE ────────────────────────────────────── */}
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
         <div style={{
@@ -420,42 +520,40 @@ export default function App() {
 
       <InteractiveNetwork />
 
-      <div style={{ position: 'relative', zIndex: 10 }}>
-        
-        {/* ── REALISTIC GLASS NAV ─────────────────────────────────────── */}
+      <div style={{ position: 'relative', zIndex: 10, opacity: isLoading ? 0 : 1, transition: 'opacity 1s ease 0.5s' }}>
+
+        {/* ── ULTRA-PREMIUM EDGE-TO-EDGE NAV ─────────────────────────────────────── */}
         <nav style={{
           position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
-          padding: '24px 0', transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-          transform: scrollY > 50 ? 'translateY(-12px)' : 'translateY(0)',
+          padding: scrollY > 50 ? '16px 0' : '28px 0',
+          transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+          background: scrollY > 50 ? 'rgba(5, 5, 5, 0.85)' : 'transparent',
+          backdropFilter: scrollY > 50 ? 'blur(30px) saturate(200%)' : 'none',
+          borderBottom: scrollY > 50 ? '1px solid rgba(255,255,255,0.06)' : '1px solid transparent',
         }}>
           <div style={{
-            maxWidth: 1100, margin: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            background: scrollY > 50 ? 'rgba(10, 10, 15, 0.85)' : 'transparent',
-            border: scrollY > 50 ? '1px solid rgba(255,255,255,0.08)' : '1px solid transparent',
-            borderRadius: 40, padding: scrollY > 50 ? '14px 28px' : '0 12px',
-            backdropFilter: scrollY > 50 ? 'blur(24px) saturate(200%)' : 'none',
-            boxShadow: scrollY > 50 ? '0 20px 40px rgba(0,0,0,0.5)' : 'none',
-          }} className="nav-container">
+            maxWidth: 1240, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px'
+          }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <div style={{
-                width: 38, height: 38, borderRadius: 10, background: '#fff',
+                width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg, #fff, #a1a1aa)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontFamily: "'Outfit', sans-serif", color: '#000', fontSize: 18, fontWeight: 700,
                 boxShadow: '0 4px 14px rgba(255,255,255,0.2)'
-              }}>NX</div>
-              <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color: '#fff', letterSpacing: '-0.02em' }}>
-                NEXUS.
+              }}>OT</div>
+              <div style={{ fontSize: 20, fontWeight: 600, fontFamily: "'Outfit', sans-serif", color: '#fff', letterSpacing: '0.05em' }}>
+                OnT Sols
               </div>
             </div>
-            
-            <div className="desktop-nav" style={{ alignItems: 'center', gap: 20 }}>
-              {['Works','Process','Agency'].map(l => (
+
+            <div className="desktop-nav" style={{ alignItems: 'center', gap: 32 }}>
+              {['Works', 'Process', 'Agency'].map(l => (
                 <a key={l} href={`#${l.toLowerCase()}`} className="nav-link">{l}</a>
               ))}
-              <a href="#contact" style={{
-                marginLeft: 16, padding: '12px 26px', borderRadius: 30, background: '#fff', color: '#000',
-                fontSize: 14, fontWeight: 600, textDecoration: 'none', transition: 'transform 0.2s',
-              }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+              <a href="#contact" className="glass-btn" style={{
+                marginLeft: 16, padding: '10px 24px', borderRadius: 30, color: '#fff',
+                fontSize: 14, fontWeight: 500, textDecoration: 'none', border: '1px solid rgba(255,255,255,0.2)'
+              }}>
                 Start Project
               </a>
             </div>
@@ -468,7 +566,7 @@ export default function App() {
           {/* Mobile Menu Expansion */}
           {mobileMenu && (
             <div style={{ position: 'fixed', top: 80, left: 24, right: 24, background: 'rgba(15,15,20,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: 20, backdropFilter: 'blur(20px)', display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {['Works','Process','Agency','Contact'].map(l => (
+              {['Works', 'Process', 'Agency', 'Contact'].map(l => (
                 <a key={l} href={`#${l.toLowerCase()}`} onClick={() => setMobileMenu(false)} style={{ color: '#fff', textDecoration: 'none', fontSize: 16, padding: '10px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: 10 }}>{l}</a>
               ))}
             </div>
@@ -478,7 +576,7 @@ export default function App() {
         {/* ── HERO ─────────────────────────────────────────────────────── */}
         <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', paddingTop: 100, paddingBottom: 60 }}>
           <div className="section-container grid-2 hero-grid" style={{ alignItems: 'center' }}>
-            
+
             <div style={{ zIndex: 2 }}>
               <div className="fade-up-1" style={{
                 display: 'inline-flex', alignItems: 'center', gap: 10, fontSize: 12, letterSpacing: '0.15em', textTransform: 'uppercase',
@@ -501,7 +599,7 @@ export default function App() {
               </h1>
 
               <p className="fade-up-3" style={{ fontSize: 'clamp(16px, 2vw, 20px)', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, maxWidth: 520, marginBottom: 48, fontWeight: 300 }}>
-                We are <strong style={{ color: '#fff', fontWeight: 500 }}>Nexus Digital</strong> — an elite agency engineering high-performance platforms and bespoke web environments for industry leaders worldwide.
+                We are <strong style={{ color: '#fff', fontWeight: 500 }}>OnT Sols</strong> — an elite agency engineering high-performance platforms and bespoke web environments for industry leaders worldwide.
               </p>
 
               <div className="fade-up-4" style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
@@ -564,14 +662,14 @@ export default function App() {
           <div className="section-container">
             <div style={{ fontSize: 13, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#10b981', marginBottom: 20, fontWeight: 600 }}>Methodology</div>
             <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 'clamp(36px, 5vw, 54px)', fontWeight: 400, color: '#fff', marginBottom: 60, letterSpacing: '-0.02em', maxWidth: 600 }}>
-              We don't guess. <br/><span style={{ color: 'rgba(255,255,255,0.4)' }}>We engineer execution.</span>
+              We don't guess. <br /><span style={{ color: 'rgba(255,255,255,0.4)' }}>We engineer execution.</span>
             </h2>
 
             <div className="grid-3">
               {[
-                { step: '01', title: 'Discovery & Strategy', icon: <Fingerprint size={28}/>, desc: 'Deep-dive analysis of market fit, user personas, and technical requirements before writing a single line of code.' },
-                { step: '02', title: 'Architecture & UX', icon: <Layers size={28}/>, desc: 'Crafting high-fidelity prototypes and defining scalable infrastructure that supports long-term growth.' },
-                { step: '03', title: 'Full-Stack Delivery', icon: <Activity size={28}/>, desc: 'Rigorous engineering utilizing React, Next.js, and headless backends with uncompromising performance standards.' }
+                { step: '01', title: 'Discovery & Strategy', icon: <Fingerprint size={28} />, desc: 'Deep-dive analysis of market fit, user personas, and technical requirements before writing a single line of code.' },
+                { step: '02', title: 'Architecture & UX', icon: <Layers size={28} />, desc: 'Crafting high-fidelity prototypes and defining scalable infrastructure that supports long-term growth.' },
+                { step: '03', title: 'Full-Stack Delivery', icon: <Activity size={28} />, desc: 'Rigorous engineering utilizing React, Next.js, and headless backends with uncompromising performance standards.' }
               ].map((item, i) => (
                 <div key={i} className="glass-btn" style={{ padding: '40px', borderRadius: 24 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 30 }}>
@@ -626,13 +724,13 @@ export default function App() {
             <div>
               <div style={{ fontSize: 13, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#8b5cf6', marginBottom: 20, fontWeight: 600 }}>The Agency</div>
               <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 'clamp(36px, 5vw, 54px)', fontWeight: 400, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 30 }}>
-                Driven by perfection. <br/><span style={{ color: 'rgba(255,255,255,0.3)' }}>Backed by data.</span>
+                Driven by perfection. <br /><span style={{ color: 'rgba(255,255,255,0.3)' }}>Backed by data.</span>
               </h2>
               <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.6)', lineHeight: 1.8, marginBottom: 20, fontWeight: 300 }}>
-                Nexus Digital was founded with a singular mission: to eliminate mediocre web experiences. We combine enterprise-grade engineering with cutting-edge visual design to create platforms that dominate their respective markets.
+                OnT Sols was founded with a singular mission: to eliminate mediocre web experiences. We combine enterprise-grade engineering with cutting-edge visual design to create platforms that dominate their respective markets.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 40 }}>
-                {['React.js','Node.js','Next.js','TypeScript','WebGL','PostgreSQL','Cloudflare'].map(s => (
+                {['React.js', 'Node.js', 'Next.js', 'TypeScript', 'WebGL', 'PostgreSQL', 'Cloudflare'].map(s => (
                   <span key={s} style={{ padding: '10px 18px', borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', fontSize: 14, color: '#fff', fontFamily: "'Outfit',sans-serif" }}>
                     {s}
                   </span>
@@ -640,7 +738,7 @@ export default function App() {
               </div>
             </div>
             <div className="grid-2" style={{ gap: 20 }}>
-              {[['Founded','2019'],['Core Team','12+ Experts'],['Tech Stack','Modern JS'],['Uptime','99.9%']].map(([l,n]) => (
+              {[['Founded', '2019'], ['Core Team', '12+ Experts'], ['Tech Stack', 'Modern JS'], ['Uptime', '99.9%']].map(([l, n]) => (
                 <div key={l} className="glass-btn" style={{ padding: '40px 30px', borderRadius: 20 }}>
                   <div style={{ fontFamily: "'Outfit',sans-serif", fontSize: 36, fontWeight: 400, color: '#fff', letterSpacing: '-0.03em', marginBottom: 12 }}>{n}</div>
                   <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{l}</div>
@@ -655,19 +753,19 @@ export default function App() {
           <div className="section-container grid-2" style={{ gap: 80 }}>
             <div>
               <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 'clamp(44px, 6vw, 72px)', fontWeight: 400, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 30 }}>
-                Ready to scale? <br/>Let's talk.
+                Ready to scale? <br />Let's talk.
               </h2>
               <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, marginBottom: 60, fontWeight: 300, maxWidth: 450 }}>
                 Partner with us to build digital products that completely outperform your competition.
               </p>
-              
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
                 {[
-                  { icon:<Mail size={20}/>,   label:'Inquiries',    val:'hello@nexusdigital.agency' },
-                  { icon:<Phone size={20}/>,  label:'Global Line',  val:'+1 (555) 000-0000' },
-                  { icon:<MapPin size={20}/>, label:'Headquarters', val:'New York / Remote Worldwide' },
-                ].map(({icon,label,val}) => (
-                  <div key={label} style={{ display:'flex', alignItems:'center', gap:24 }}>
+                  { icon: <Mail size={20} />, label: 'Inquiries', val: 'hello@ontsols.com' },
+                  { icon: <Phone size={20} />, label: 'Global Line', val: '+1 (647) 558-5637' },
+                  { icon: <MapPin size={20} />, label: 'Headquarters', val: 'New York / Remote Worldwide' },
+                ].map(({ icon, label, val }) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
                     <div style={{ width: 56, height: 56, borderRadius: 14, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>{icon}</div>
                     <div>
                       <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, fontWeight: 600 }}>{label}</div>
@@ -679,15 +777,15 @@ export default function App() {
             </div>
 
             <TiltCard style={{ background: 'rgba(15, 15, 20, 0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 24, padding: 'clamp(30px, 5vw, 56px)', backdropFilter: 'blur(30px)' }}>
-              <div style={{ display:'flex', flexDirection:'column', gap: 24 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 24 }}>
-                  <input placeholder="First Name" style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.1)', padding:'18px 24px', borderRadius:14, color:'#fff', outline:'none', fontSize: 15, transition: 'border 0.3s' }} onFocus={e=>e.target.style.borderColor='#3b82f6'} onBlur={e=>e.target.style.borderColor='rgba(255,255,255,0.1)'}/>
-                  <input placeholder="Last Name" style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.1)', padding:'18px 24px', borderRadius:14, color:'#fff', outline:'none', fontSize: 15, transition: 'border 0.3s' }} onFocus={e=>e.target.style.borderColor='#3b82f6'} onBlur={e=>e.target.style.borderColor='rgba(255,255,255,0.1)'}/>
+                  <input placeholder="First Name" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '18px 24px', borderRadius: 14, color: '#fff', outline: 'none', fontSize: 15, transition: 'border 0.3s' }} onFocus={e => e.target.style.borderColor = '#3b82f6'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+                  <input placeholder="Last Name" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '18px 24px', borderRadius: 14, color: '#fff', outline: 'none', fontSize: 15, transition: 'border 0.3s' }} onFocus={e => e.target.style.borderColor = '#3b82f6'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
                 </div>
-                <input placeholder="Company / Organization" style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.1)', padding:'18px 24px', borderRadius:14, color:'#fff', outline:'none', fontSize: 15, transition: 'border 0.3s' }} onFocus={e=>e.target.style.borderColor='#3b82f6'} onBlur={e=>e.target.style.borderColor='rgba(255,255,255,0.1)'}/>
-                <input placeholder="Email Address" style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.1)', padding:'18px 24px', borderRadius:14, color:'#fff', outline:'none', fontSize: 15, transition: 'border 0.3s' }} onFocus={e=>e.target.style.borderColor='#3b82f6'} onBlur={e=>e.target.style.borderColor='rgba(255,255,255,0.1)'}/>
-                <textarea rows={5} placeholder="Tell us about your project..." style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.1)', padding:'18px 24px', borderRadius:14, color:'#fff', outline:'none', fontSize: 15, resize: 'none', transition: 'border 0.3s' }} onFocus={e=>e.target.style.borderColor='#3b82f6'} onBlur={e=>e.target.style.borderColor='rgba(255,255,255,0.1)'}/>
-                
+                <input placeholder="Company / Organization" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '18px 24px', borderRadius: 14, color: '#fff', outline: 'none', fontSize: 15, transition: 'border 0.3s' }} onFocus={e => e.target.style.borderColor = '#3b82f6'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+                <input placeholder="Email Address" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '18px 24px', borderRadius: 14, color: '#fff', outline: 'none', fontSize: 15, transition: 'border 0.3s' }} onFocus={e => e.target.style.borderColor = '#3b82f6'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+                <textarea rows={5} placeholder="Tell us about your project..." style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '18px 24px', borderRadius: 14, color: '#fff', outline: 'none', fontSize: 15, resize: 'none', transition: 'border 0.3s' }} onFocus={e => e.target.style.borderColor = '#3b82f6'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+
                 <button style={{
                   background: '#fff', color: '#000', padding: '20px', borderRadius: 14,
                   fontSize: 16, fontWeight: 600, border: 'none', cursor: 'pointer',
@@ -704,13 +802,13 @@ export default function App() {
         <footer style={{ borderTop: `1px solid rgba(255,255,255,0.05)`, padding: '60px 0', background: '#000' }}>
           <div className="section-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 30 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 8, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontSize: 12, fontWeight: 700, fontFamily: "'Outfit',sans-serif" }}>NX</div>
-              <span style={{ fontSize: 15, color: 'rgba(255,255,255,0.4)' }}>© 2024 Nexus Digital Agency. All Rights Reserved.</span>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontSize: 12, fontWeight: 700, fontFamily: "'Outfit',sans-serif" }}>OT</div>
+              <span style={{ fontSize: 15, color: 'rgba(255,255,255,0.4)' }}>© 2024 OnT Sols. All Rights Reserved.</span>
             </div>
             <div style={{ display: 'flex', gap: 32 }}>
-              {[{i:<Linkedin size={20}/>,l:'LinkedIn'}, {i:<Twitter size={20}/>,l:'Twitter'}, {i:<Github size={20}/>,l:'GitHub'}].map((item,i)=>(
+              {[{ i: <Linkedin size={20} />, l: 'LinkedIn' }, { i: <Twitter size={20} />, l: 'Twitter' }, { i: <Github size={20} />, l: 'GitHub' }].map((item, i) => (
                 <a key={i} href="#" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', transition: 'color 0.2s' }}
-                  onMouseEnter={e=>e.currentTarget.style.color='#fff'} onMouseLeave={e=>e.currentTarget.style.color='rgba(255,255,255,0.4)'}>
+                  onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}>
                   {item.i}
                 </a>
               ))}
