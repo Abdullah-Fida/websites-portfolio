@@ -498,7 +498,7 @@ export default function App() {
       <div className={`loader ${!isLoading ? 'hidden' : ''}`}>
         <div className="loader-logo-wrap">
            <div className="loader-logo">
-             OnT Sols<span style={{ color: '#3b82f6' }}>.</span>
+             Ikonnect Services<span style={{ color: '#3b82f6' }}>.</span>
            </div>
         </div>
       </div>
@@ -540,9 +540,9 @@ export default function App() {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontFamily: "'Outfit', sans-serif", color: '#000', fontSize: 18, fontWeight: 700,
                 boxShadow: '0 4px 14px rgba(255,255,255,0.2)'
-              }}>OT</div>
+              }}>IS</div>
               <div style={{ fontSize: 20, fontWeight: 600, fontFamily: "'Outfit', sans-serif", color: '#fff', letterSpacing: '0.05em' }}>
-                OnT Sols
+                Ikonnect Services
               </div>
             </div>
 
@@ -599,7 +599,7 @@ export default function App() {
               </h1>
 
               <p className="fade-up-3" style={{ fontSize: 'clamp(16px, 2vw, 20px)', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, maxWidth: 520, marginBottom: 48, fontWeight: 300 }}>
-                We are <strong style={{ color: '#fff', fontWeight: 500 }}>OnT Sols</strong> — an elite agency engineering high-performance platforms and bespoke web environments for industry leaders worldwide.
+                We are <strong style={{ color: '#fff', fontWeight: 500 }}>Ikonnect Services</strong> — an elite agency engineering high-performance platforms and bespoke web environments for industry leaders worldwide.
               </p>
 
               <div className="fade-up-4" style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
@@ -727,7 +727,7 @@ export default function App() {
                 Driven by perfection. <br /><span style={{ color: 'rgba(255,255,255,0.3)' }}>Backed by data.</span>
               </h2>
               <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.6)', lineHeight: 1.8, marginBottom: 20, fontWeight: 300 }}>
-                OnT Sols was founded with a singular mission: to eliminate mediocre web experiences. We combine enterprise-grade engineering with cutting-edge visual design to create platforms that dominate their respective markets.
+                Ikonnect Services was founded with a singular mission: to eliminate mediocre web experiences. We combine enterprise-grade engineering with cutting-edge visual design to create platforms that dominate their respective markets.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 40 }}>
                 {['React.js', 'Node.js', 'Next.js', 'TypeScript', 'WebGL', 'PostgreSQL', 'Cloudflare'].map(s => (
@@ -761,7 +761,7 @@ export default function App() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
                 {[
-                  { icon: <Mail size={20} />, label: 'Inquiries', val: 'hello@ontsols.com' },
+                  { icon: <Mail size={20} />, label: 'Inquiries', val: 'hello@ikonnectservices.com' },
                   { icon: <Phone size={20} />, label: 'Global Line', val: '+1 (647) 558-5637' },
                   { icon: <MapPin size={20} />, label: 'Headquarters', val: 'New York / Remote Worldwide' },
                 ].map(({ icon, label, val }) => (
@@ -802,8 +802,8 @@ export default function App() {
         <footer style={{ borderTop: `1px solid rgba(255,255,255,0.05)`, padding: '60px 0', background: '#000' }}>
           <div className="section-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 30 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 8, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontSize: 12, fontWeight: 700, fontFamily: "'Outfit',sans-serif" }}>OT</div>
-              <span style={{ fontSize: 15, color: 'rgba(255,255,255,0.4)' }}>© 2024 OnT Sols. All Rights Reserved.</span>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontSize: 12, fontWeight: 700, fontFamily: "'Outfit',sans-serif" }}>IS</div>
+              <span style={{ fontSize: 15, color: 'rgba(255,255,255,0.4)' }}>© 2024 Ikonnect Services. All Rights Reserved.</span>
             </div>
             <div style={{ display: 'flex', gap: 32 }}>
               {[{ i: <Linkedin size={20} />, l: 'LinkedIn' }, { i: <Twitter size={20} />, l: 'Twitter' }, { i: <Github size={20} />, l: 'GitHub' }].map((item, i) => (
